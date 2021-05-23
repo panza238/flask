@@ -1,0 +1,12 @@
+{% macro render_comment(comment) %}
+<li>{{ comment }}</li>
+{% endmacro %}
+
+{% macro render_list(list) %}
+<h3>This list comes from macros.html</h3>
+<ul>
+{% for element in list %}
+    <li>{{ element }}</li>
+{% endfor %}
+</ul>
+{% endmacro %}
