@@ -1,7 +1,9 @@
 from flask import Flask, request, make_response, render_template
 from markupsafe import escape
+from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
+bootstrap = Bootstrap(app)  # Ahora puedo usar bootstrap templates para hacer mi front más lindo con menos esfuerzo.
 
 
 # Esta va a ser la route básica. No hace nada más que display "Hello, World!"
@@ -65,5 +67,23 @@ def dyn_template_rendering_fc(temp_name):
 def extended(list_len):
     """usando el template que hay en base.html, construyo extended.html
     llamando a extended.html usé un poco de td... macros, base templates, jinja.
-    notar que, al final, lo que se muestra es un html fijo, sin las variables!"""
-    return render_template("extended.html", html_list=list(range(list_len)))
+    notar que, al final, lo que se muestra es un html fijo, sin las variables!
+    también uso python_list y html_list para que quede explícito."""
+    python_list = list(range(list_len))
+    return render_template("extended.html", html_list=python_list)
+
+
+# Bootstrap expample:
+@app.route("/bootstrap_extended/<string:name>")
+def bootstrap_extended(name):
+    """Muy parecido al extended. Pero ahora, el template que uso como base es el de Bootstrap"""
+    return render_template("bootstrap_extended.html", html_name=name)
+
+
+# Error handling example
+@app.errorhandler(404)
+def page_not_found(e):
+    """La idea de esta función es dirigirte a una página custom cuando haya un error.
+    Esto va a funcionar solo para el error 404. si quiero handelear otro error... tengo que hacer otra función.
+    (o ver cómo lo resolvieron en CS50)"""
+    return render_template("/404.html"), 404
