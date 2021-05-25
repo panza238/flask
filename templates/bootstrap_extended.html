@@ -1,4 +1,22 @@
 {% extends "bootstrap/base.html" %}
+
+<!-- Agrego otra cosa al html. uso super para heredar lo que hay en bootstrap/base.html en lugar de overridearlo.-->
+{% block scripts %}
+{{ super() }}
+{{ moment.include_moment() }}
+{% endblock %}
+
+<!-- Acá agrego un favicon! O sea, una imagen para mostrar en la página.
+Notar que uso SUPER para no overridear lo que ya estaba en el block head de bootstrap/base.html
+notar también que uso el url_for() de Jinja para generar los links dinámicamente-->
+{% block head %}
+{{ super() }}
+<link rel="shortcut icon" href="{{ url_for('static', filename='cluster_icon.ico') }}"
+type="image/x-icon">
+<link rel="icon" href="{{ url_for('static', filename='cluster_icon.ico') }}"
+type="image/x-icon">
+{% endblock %}
+
 {% block title %} Te amo, linda &#x2764; {% endblock %}
 
 {% block navbar %}
@@ -20,6 +38,13 @@
 <div class="container">
     <div class="page-header">
         <h2>Hello {{ html_name }} &#x2764 &#x2764 &#x2764</h2>
+    </div>
+    <div class = "panel panel-default">
+       <div class = "panel-body">
+           <!-- Le agrego la parte del datetime! -->
+            <p>The local date and time is {{ moment(current_time).format('LLL') }}.</p>
+            <p>That was {{ moment(current_time).fromNow(refresh=True) }}</p>
+       </div>
     </div>
 </div>
 {% endblock %}
