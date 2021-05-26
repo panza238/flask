@@ -6,13 +6,20 @@ from flask_moment import Moment
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 import os
 
+basedir = os.path.abspath(os.path.dirname(__file__))  # Directorio base.
 app = Flask(__name__)
 bootstrap = Bootstrap(app)  # Ahora puedo usar bootstrap templates para hacer mi front más lindo con menos esfuerzo.
 moment = Moment(app)
 app.config['SECRET_KEY'] = os.getenv("FLASK_SECRET_KEY")  # Esto es para usar WTF Forms.
-
+# Configuración para usar SQLite con SQLAlchemy
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # Esta va a ser la route básica. No hace nada más que display "Hello, World!"
 @app.route("/")
@@ -137,4 +144,63 @@ def form2_fc():
     # 2) Redirige al mismo URL: /forms2. Cuando se renderea, toma el nombre de la session, que persiste entre requests.
     # Ahora, con esto. No puedo hacer que se olvide mi nombre, a menos que explícitamente se lo diga en el código.
     return render_template("/form.html", form=my_form, html_name=session.get("name"))
+
+
+# DATABASES!
+# Vamos a trabajar con SQLite (porque es más fácil)
+class Role(db.Model):
+    """Este model va a ser el objeto que representa a la tabla 'roles'"""
+    __tablename__ = 'roles'  # nombre de la tabla.
+    id = db.Column(db.Integer, primary_key=True)  # Primera columna
+    name = db.Column(db.String(64), unique=True)  # Segunda columna
+    users = db.relationship('User', backref='role', lazy="dynamic")  # Acá estoy creando una relación...
+    # NO me cierra tanto el 'role'... 'role' es una high-level representation de la one-to-many relationship.
+    # En la flask shell la puedo tratar como una columna más de la tabla users.
+
+    def __repr__(self):
+        return '<Role %r>' % self.name
+
+
+class User(db.Model):
+    """Objeto que referencia la tabla users"""
+    __tablename__ = 'users'  # nombre de la tabla.
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), unique=True, index=True)
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))  # Acá agrego la columna, y le digo que es una foreign key.
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
+
+# ahora armo una función que interactúe con la db a través del ORM.
+# Puedo pensar a los models como una definición de tablas. Con el objeto db, puedo interactuar con ellas.
+@app.route("/model_form", methods=["GET", "POST"])
+def model_form():
+    form = MyForm()
+    if form.validate_on_submit():
+        flash("Looks like you've changed your name!")  # Esto va a mostrar un flash message!
+        user = User.query.filter_by(username=form.name.data).first()  # Busca el nombre que acabo de ingresar en el form de la DB
+        #result = db.engine.execute("SELECT * FROM users")  # OK... esto también funciona.
+
+        if user is None:  # Si no lo encuentra en la DB, lo agrega
+            user = User(username=form.name.data)
+            db.session.add(user)
+            db.session.commit()
+            session['known'] = False
+            session['name'] = form.name.data
+            return redirect(url_for('model_form'))
+        else:  # Si lo encuentra en la DB, sólo cambia el session name.
+            session['known'] = True
+            session['name'] = form.name.data
+            form.name.data = ''
+            return redirect(url_for('model_form'))  # Este es el truco del redirect para que quede una GET request.
+    return render_template('/model_form.html',
+                           form=form, html_name=session.get('name'),
+                           known=session.get('known', False))
+
+# Para no tener que estar importando siempre:
+@app.shell_context_processor
+def make_shell_context():
+    """Ahora se db, User y Role se importan automágicamente cuando incializo la flask shell."""
+    return dict(db=db, User=User, Role=Role)
 

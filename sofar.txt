@@ -5,4 +5,7 @@
  2) Hacer que otras computadoras en la red puedan ver la app
     Esto se hace con el comando flask run --host 0.0.0.0 !
  3) pip install flask-bootstrap is the easy "take-care-of-this-for-me" way to include Bootstrap in your web app.
- 4)
+ 4) Ver integración entre Flask y Mongo con PyMongo.
+ 5) Try to generate a separate script for the DB Models and import the models from the main script.
+ 6) Ver la parte de "Database Operations" del capítulo5 para ver cómo crear las tablas y demás. db.create_all()
+ 7) Las migrations es como el git de las DBs. Es como un control de versiones de las tablas.
