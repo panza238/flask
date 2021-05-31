@@ -9,3 +9,4 @@
  5) Try to generate a separate script for the DB Models and import the models from the main script.
  6) Ver la parte de "Database Operations" del capítulo5 para ver cómo crear las tablas y demás. db.create_all()
  7) Las migrations es como el git de las DBs. Es como un control de versiones de las tablas.
+ 8) Ver capítulo 7 para ver cómo es la estructura de una app grande.

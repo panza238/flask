@@ -1,0 +1,8 @@
+{% import 'macros.html' as macros %}
+{% extends "base.html" %}
+
+{% block title %} Extended {% endblock %}
+{% block body %}
+    <h2>This comes from extended.html</h2>
+    {{ macros.render_list(html_list) }}
+{% endblock %}
